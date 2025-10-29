@@ -13,7 +13,7 @@ services:
       - .env
     restart: always
     networks:
-      - pdk_service
+      - app-tier
     volumes:
       # Mount docker.sock jika ingin monitor container
       - /var/run/docker.sock:/var/run/docker.sock
@@ -22,5 +22,5 @@ services:
       - API_HOST=${API_HOST:-localhost:18904}
 
 networks:
-  pdk_service:
+  app-tier:
     external: true
