@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Server Monitor</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script type="module" src="/static/app.js"></script>
+  <style>
+    .warn { color: #b45309; }
+    .alert { color: #b91c1c; font-weight: 600; }
+    .ok { color: #065f46; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+    .small { font-size: 12px; color: #6b7280; }
+    .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 16px 0; }
+    .chart-container { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .chart-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+    canvas { max-height: 200px; }
+  </style>
+  </head>
+<body>
+  <main>
+    <h1>Web Monitor Server</h1>
+    <div class="small">Thresholds: Mem ≥ {{printf "%.0f" .MemTh}}% • Disk ≥ {{printf "%.0f" .DiskTh}}%</div>
+    <div id="updated" class="small">Updated: {{ .Updated }}</div>
+
+    <div id="cards"></div>
+  </main>
+
+  <div id="th" data-mem="{{ .MemTh }}" data-disk="{{ .DiskTh }}" data-proc="{{ .ProcTh }}" style="display:none"></div>
+  <div id="dbth" data-conn="{{ .DBConnTh }}" data-longsec="{{ .DBLongSec }}" style="display:none"></div>
+  <script>
+    // Frontend JS will fetch /api/state and render cards.
+  </script>
+</body>
+</html>

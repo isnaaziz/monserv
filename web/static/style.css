@@ -1,0 +1,117 @@
+
+/* ===== Layout ===== */
+body {
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+  margin: 0;
+  background: #f9fafb;
+  color: #111827;
+}
+main {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 16px;
+}
+h1 {
+  font-size: 24px;
+  margin: 8px 0 12px;
+}
+h2 {
+  font-size: 18px;
+  margin: 12px 0 6px;
+}
+h3 {
+  font-size: 16px;
+  margin: 10px 0 6px;
+}
+
+/* ===== Card ===== */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.card-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+/* ===== Badges ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  border: 1px solid transparent;
+}
+.badge-green {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+.badge-yellow {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.badge-red {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* ===== Tables ===== */
+.table-wrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+/* Chart styles */
+.charts-row { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+  gap: 12px; 
+  margin: 12px 0; 
+}
+.chart-container { 
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0; 
+  border-radius: 8px; 
+  padding: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+.chart-title { 
+  font-weight: 600; 
+  font-size: 13px; 
+  margin-bottom: 10px; 
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+canvas { 
+  max-height: 200px; 
+  background: white;
+  border-radius: 6px;
+  padding: 4px;
+}
