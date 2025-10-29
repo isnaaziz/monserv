@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  monserv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    container_name: monserv
+    ports:
+      - "18904:18904"
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - pdk_service
+    volumes:
+      # Mount docker.sock jika ingin monitor container
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - SERVER_PORT=18904
+      - API_HOST=${API_HOST:-localhost:18904}
+
+networks:
+  pdk_service:
+    external: true

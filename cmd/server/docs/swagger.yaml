@@ -1,0 +1,11 @@
+basePath: /api
+host: localhost:18904
+info:
+  contact:
+    email: support@monserv.local
+    name: API Support
+  description: Server Monitoring System REST API for Mobile Integration
+  title: MonServ API
+  version: "1.0"
+paths: {}
+swagger: "2.0"

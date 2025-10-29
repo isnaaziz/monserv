@@ -1,6 +1,32 @@
 import { fmtBytes, badge } from './utils.js';
 import { charts, historyData, updateHistory, createOrUpdateChart, createOrUpdateGauge } from './charts.js';
 
+// Mask password in URL for safe display
+function maskPassword(url) {
+  try {
+    const u = new URL(url);
+    if (u.password) {
+      u.password = '***';
+    }
+    return u.toString();
+  } catch (e) {
+    // Manual masking for URLs that don't parse
+    if (url.includes('@') && url.includes(':')) {
+      const parts = url.split('@');
+      if (parts.length >= 2) {
+        const authPart = parts[0];
+        const restPart = parts.slice(1).join('@');
+        const lastColon = authPart.lastIndexOf(':');
+        if (lastColon > 0) {
+          const beforePassword = authPart.substring(0, lastColon);
+          return beforePassword + ':***@' + restPart;
+        }
+      }
+    }
+    return url;
+  }
+}
+
 export function render(state) {
   const container = document.getElementById('cards');
   const agents = Object.keys(state).sort();
@@ -41,12 +67,13 @@ export function render(state) {
 }
 
 export function createAgentCardShell(url, m, cardId, chartId) {
+  const maskedUrl = maskPassword(url);
   const card = document.createElement('div');
   card.id = cardId;
   card.className = 'card';
   card.innerHTML = `
     <h2 class="agent-hostname">${m.hostname || url}</h2>
-    <div class="small agent-meta">Agent: ${url} • Uptime: ${m.uptimeSeconds||0}s • At: ${m.generatedAtUtc||''}</div>
+    <div class="small agent-meta">Agent: ${maskedUrl} • Uptime: ${m.uptimeSeconds||0}s • At: ${m.generatedAtUtc||''}</div>
     <div class="charts-row">
       <div class="chart-container">
         <div class="chart-title">Memory & Disk Usage Trend</div>
@@ -74,11 +101,12 @@ export function createAgentCardShell(url, m, cardId, chartId) {
 }
 
 export function updateAgentCardData(card, m, url, chartId) {
+  const maskedUrl = maskPassword(url);
   const mem = m.memory || {};
   const disks = m.disks || [];
   const procs = m.topProcsByMem || [];
   card.querySelector('.agent-hostname').textContent = m.hostname || url;
-  card.querySelector('.agent-meta').innerHTML = `Agent: ${url} • Uptime: ${m.uptimeSeconds||0}s • At: ${m.generatedAtUtc||''}`;
+  card.querySelector('.agent-meta').innerHTML = `Agent: ${maskedUrl} • Uptime: ${m.uptimeSeconds||0}s • At: ${m.generatedAtUtc||''}`;
   card.querySelector('.agent-memory').innerHTML = `Total: ${fmtBytes(mem.total||0)} • Used: ${fmtBytes(mem.used||0)} • Used: ${mem.usedPercent?badge(mem.usedPercent, window.MEM_TH || 90):'-'}`;
   const diskTbody = card.querySelector('.agent-disks tbody');
   diskTbody.innerHTML = disks.map(d=>`<tr><td>${d.mountpoint}</td><td>${d.fstype}</td><td>${fmtBytes(d.total)}</td><td>${fmtBytes(d.used)}</td><td>${fmtBytes(d.free)}</td><td>${badge(d.usedPercent, window.DISK_TH || 90)}</td></tr>`).join('');

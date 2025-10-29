@@ -11,7 +11,14 @@ import (
 
 	m "monserv/internal/metrics"
 	"monserv/internal/notifier"
+	"monserv/internal/repository"
 )
+
+// WebSocketBroadcaster interface untuk broadcast metrics via WebSocket
+type WebSocketBroadcaster interface {
+	BroadcastMetrics(state map[string]*m.ServerMetrics)
+	BroadcastAlert(alertType, subject, message string)
+}
 
 type State struct {
 	mu     sync.RWMutex
@@ -41,6 +48,8 @@ type Poller struct {
 	State    *State
 	Notifier notifier.Notifier
 	Client   *http.Client
+	Repo     repository.MetricsRepository // Tambahan untuk sync ke repository
+	WSHub    WebSocketBroadcaster         // Tambahan untuk WebSocket broadcast
 }
 
 func NewPoller(cfg Config, n notifier.Notifier) *Poller {
@@ -49,6 +58,8 @@ func NewPoller(cfg Config, n notifier.Notifier) *Poller {
 		State:    NewState(cfg.Agents),
 		Notifier: n,
 		Client:   &http.Client{Timeout: 5 * time.Second},
+		Repo:     nil, // akan diset dari main.go
+		WSHub:    nil, // akan diset dari main.go
 	}
 }
 
@@ -89,11 +100,23 @@ func (p *Poller) runOnce() {
 				p.State.mu.Lock()
 				p.State.Latest[u] = met
 				p.State.mu.Unlock()
+
+				// Sync ke repository jika tersedia
+				if p.Repo != nil {
+					p.Repo.Set(u, met)
+				}
+
 				p.checkAlerts(u, met)
 			}
 		}(url)
 	}
 	wg.Wait()
+
+	// Broadcast metrics update via WebSocket setelah semua agents selesai polling
+	if p.WSHub != nil {
+		_, latest := p.State.Snapshot()
+		p.WSHub.BroadcastMetrics(latest)
+	}
 }
 
 func (p *Poller) fetchHTTP(base string) (*m.ServerMetrics, error) {
@@ -182,6 +205,13 @@ func (p *Poller) raiseOnce(key, subject, body string) {
 	}
 	p.State.mu.Unlock()
 	if !active {
+		if p.Repo != nil {
+			p.Repo.SetAlert(key, true)
+		}
+		// Broadcast alert via WebSocket
+		if p.WSHub != nil {
+			p.WSHub.BroadcastAlert("alert", subject, body)
+		}
 		log.Printf("[ALERT-SEND] %s | %s", subject, body)
 		_ = p.Notifier.Send(subject, body)
 	}
@@ -195,6 +225,13 @@ func (p *Poller) recoverIfActive(key, subject, body string) {
 	}
 	p.State.mu.Unlock()
 	if active {
+		if p.Repo != nil {
+			p.Repo.DeleteAlert(key)
+		}
+		// Broadcast recovery via WebSocket
+		if p.WSHub != nil {
+			p.WSHub.BroadcastAlert("recovery", subject, body)
+		}
 		log.Printf("[RECOVERED-SEND] %s | %s", subject, body)
 		_ = p.Notifier.Send(subject, body)
 	}

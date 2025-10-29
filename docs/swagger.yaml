@@ -1,0 +1,340 @@
+basePath: /api
+definitions:
+  dto.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.AlertResponse:
+    properties:
+      hostname:
+        example: scadanas
+        type: string
+      id:
+        example: ssh://scada:***@192.168.4.3:2222|mem
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      message:
+        example: Memory used 85.0% (threshold 80.0%)
+        type: string
+      resolved_at:
+        example: "2025-10-29T13:00:00Z"
+        type: string
+      server_url:
+        example: ssh://scada:***@192.168.4.3:2222
+        type: string
+      severity:
+        enum:
+        - warning
+        - critical
+        example: critical
+        type: string
+      subject:
+        example: '[ALERT] scadanas memory high'
+        type: string
+      triggered_at:
+        example: "2025-10-29T12:00:00Z"
+        type: string
+      type:
+        enum:
+        - memory
+        - disk
+        - process
+        example: memory
+        type: string
+    type: object
+  dto.DiskResponse:
+    properties:
+      device:
+        example: /dev/sda1
+        type: string
+      free_bytes:
+        example: 53687091200
+        type: integer
+      fstype:
+        example: ext4
+        type: string
+      mountpoint:
+        example: /
+        type: string
+      total_bytes:
+        example: 107374182400
+        type: integer
+      used_bytes:
+        example: 53687091200
+        type: integer
+      used_percent:
+        example: 50
+        type: number
+    type: object
+  dto.HealthResponse:
+    properties:
+      alerts:
+        example: 2
+        type: integer
+      offline:
+        example: 1
+        type: integer
+      online:
+        example: 3
+        type: integer
+      servers:
+        additionalProperties:
+          $ref: '#/definitions/dto.ServerHealthInfo'
+        type: object
+      status:
+        enum:
+        - ok
+        - degraded
+        - error
+        example: ok
+        type: string
+      total:
+        example: 4
+        type: integer
+    type: object
+  dto.MemoryResponse:
+    properties:
+      free_bytes:
+        example: 4294967296
+        type: integer
+      total_bytes:
+        example: 8589934592
+        type: integer
+      used_bytes:
+        example: 4294967296
+        type: integer
+      used_percent:
+        example: 50
+        type: number
+    type: object
+  dto.ProcessResponse:
+    properties:
+      cmdline:
+        example: postgres -D /var/lib/postgresql/data
+        type: string
+      name:
+        example: postgres
+        type: string
+      percent_ram:
+        example: 6.25
+        type: number
+      pid:
+        example: 1234
+        type: integer
+      rss_bytes:
+        example: 536870912
+        type: integer
+      username:
+        example: postgres
+        type: string
+    type: object
+  dto.ServerHealthInfo:
+    properties:
+      hostname:
+        example: scadanas
+        type: string
+      status:
+        enum:
+        - online
+        - offline
+        - warning
+        - alert
+        example: online
+        type: string
+      url:
+        example: ssh://scada:***@192.168.4.3:2222
+        type: string
+    type: object
+  dto.ServerListResponse:
+    properties:
+      servers:
+        items:
+          $ref: '#/definitions/dto.ServerStatusResponse'
+        type: array
+      total:
+        example: 4
+        type: integer
+    type: object
+  dto.ServerMetricsResponse:
+    properties:
+      disks:
+        items:
+          $ref: '#/definitions/dto.DiskResponse'
+        type: array
+      generated_at_utc:
+        example: "2025-10-29T12:00:00Z"
+        type: string
+      hostname:
+        example: scadanas
+        type: string
+      memory:
+        $ref: '#/definitions/dto.MemoryResponse'
+      top_processes_by_memory:
+        items:
+          $ref: '#/definitions/dto.ProcessResponse'
+        type: array
+      uptime_seconds:
+        example: 3600
+        type: integer
+    type: object
+  dto.ServerStatusResponse:
+    properties:
+      last_update:
+        example: "2025-10-29T12:00:00Z"
+        type: string
+      metrics:
+        $ref: '#/definitions/dto.ServerMetricsResponse'
+      status:
+        enum:
+        - online
+        - offline
+        - warning
+        - alert
+        example: online
+        type: string
+      url:
+        example: ssh://scada:***@192.168.4.3:2222
+        type: string
+    type: object
+info:
+  contact:
+    email: support@monserv.local
+    name: API Support
+  description: |-
+    Server Monitoring System REST API for Mobile Integration
+
+    ## WebSocket Real-Time Updates
+    Connect to WebSocket endpoint `/ws` for real-time metrics and alerts.
+    Example: `ws://your-server-host:port/ws`
+    See `/docs/WEBSOCKET_API.md` for complete documentation.
+
+    ## Dynamic Host Support
+    API dapat diakses dari mana saja. Swagger UI akan auto-detect host.
+    Set environment variable `API_HOST` untuk override (optional).
+  title: MonServ API
+  version: "1.0"
+paths:
+  /v1/alerts/active:
+    get:
+      consumes:
+      - application/json
+      description: Get list of all currently active alerts across all servers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved active alerts
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.AlertResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+      summary: Get all active alerts
+      tags:
+      - Alerts
+  /v1/health:
+    get:
+      consumes:
+      - application/json
+      description: Get simplified health status (online/offline/warning/alert) for
+        all servers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved health status
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.HealthResponse'
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+      summary: Get health status of all servers
+      tags:
+      - Health
+  /v1/servers:
+    get:
+      consumes:
+      - application/json
+      description: Get list of all servers being monitored with their current status
+        and metrics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved server list
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ServerListResponse'
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+      summary: Get all monitored servers
+      tags:
+      - Servers
+  /v1/servers/metrics:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed metrics for a specific server by URL
+      parameters:
+      - description: Server URL
+        example: ssh://scada:@Grita123@192.168.4.3:2222
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved server metrics
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ServerMetricsResponse'
+              type: object
+        "400":
+          description: Bad request - URL parameter missing
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+        "404":
+          description: Server not found
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.APIResponse'
+      summary: Get metrics for specific server
+      tags:
+      - Servers
+swagger: "2.0"
