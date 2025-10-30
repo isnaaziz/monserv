@@ -22,9 +22,21 @@
   </head>
 <body>
   <main>
-    <h1>Web Monitor Server</h1>
-    <div class="small">Thresholds: Mem ≥ {{printf "%.0f" .MemTh}}% • Disk ≥ {{printf "%.0f" .DiskTh}}%</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <h1 style="margin: 0;">Web Monitor Server</h1>
+        <div class="small">Thresholds: Mem ≥ {{printf "%.0f" .MemTh}}% • Disk ≥ {{printf "%.0f" .DiskTh}}%</div>
+      </div>
+      <div id="connection-status" style="display: flex; align-items: center; gap: 8px;">
+        <div id="status-dot" class="status-dot connecting"></div>
+        <span id="status-text" style="font-size: 14px; color: #6b7280;">Connecting...</span>
+      </div>
+    </div>
+    
     <div id="updated" class="small">Updated: {{ .Updated }}</div>
+
+    <!-- Notifications container -->
+    <div id="notifications" style="position: fixed; top: 20px; right: 20px; z-index: 1000; max-width: 400px;"></div>
 
     <div id="cards"></div>
   </main>

@@ -115,3 +115,142 @@ canvas {
   border-radius: 6px;
   padding: 4px;
 }
+
+/* ===== WebSocket Connection Status ===== */
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-dot.connected {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  animation: none;
+}
+
+.status-dot.connecting {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.status-dot.disconnected {
+  background: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.2);
+  animation: none;
+}
+
+.status-dot.error {
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  animation: none;
+}
+
+.status-dot.polling {
+  background: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== Notifications ===== */
+.notification {
+  background: white;
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  animation: slideIn 0.3s ease-out;
+  max-width: 400px;
+}
+
+.notification strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.notification p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.notification-success {
+  border-left-color: #10b981;
+}
+
+.notification-warning {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.notification-error {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.notification-info {
+  border-left-color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== Connection Badge ===== */
+.connection-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.connection-badge.connected {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.connection-badge.connecting {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.connection-badge.disconnected {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.connection-badge.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.connection-badge.polling {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
