@@ -1,5 +1,5 @@
-import { fetchState } from './api.js';
-import { render } from './render.js';
+import { fetchState } from './api.js?v=2';
+import { render } from './render.js?v=2';
 
 // WebSocket connection
 let ws = null;
@@ -227,9 +227,11 @@ window.addEventListener('load', () => {
   // Load thresholds from data attributes
   const th = document.getElementById('th');
   if (th) {
+    const c = parseFloat(th.dataset.cpu || '80');
     const m = parseFloat(th.dataset.mem || '90');
     const d = parseFloat(th.dataset.disk || '90');
     const p = parseFloat(th.dataset.proc || '20');
+    if (!Number.isNaN(c)) window.CPU_TH = c;
     if (!Number.isNaN(m)) window.MEM_TH = m;
     if (!Number.isNaN(d)) window.DISK_TH = d;
     if (!Number.isNaN(p)) window.PROC_TH = p;

@@ -137,6 +137,7 @@ func (p *Poller) fetchHTTP(base string) (*m.ServerMetrics, error) {
 
 func (p *Poller) checkAlerts(agentURL string, mtr *m.ServerMetrics) {
 	if p.Cfg.LogThresholds {
+		log.Printf("[THRESHOLD] host=%s cpu=%.1f%% th=%.1f%%", mtr.Hostname, mtr.CPU.UsedPercent, p.Cfg.CPUThreshold)
 		log.Printf("[THRESHOLD] host=%s mem=%.1f%% th=%.1f%%", mtr.Hostname, mtr.Memory.UsedPercent, p.Cfg.MemThreshold)
 		for _, d := range mtr.Disks {
 			log.Printf("[THRESHOLD] host=%s mount=%s disk=%.1f%% th=%.1f%%", mtr.Hostname, d.Mountpoint, d.UsedPercent, p.Cfg.DiskThreshold)
@@ -144,6 +145,15 @@ func (p *Poller) checkAlerts(agentURL string, mtr *m.ServerMetrics) {
 		for _, pr := range mtr.TopProcsByMem {
 			log.Printf("[THRESHOLD] host=%s pid=%d name=%s ram=%.1f%% th=%.1f%%", mtr.Hostname, pr.PID, pr.Name, pr.PercentRAM, p.Cfg.ProcThreshold)
 		}
+	}
+	// CPU threshold
+	keyCPU := fmt.Sprintf("%s|cpu", agentURL)
+	if mtr.CPU.UsedPercent >= p.Cfg.CPUThreshold {
+		p.raiseOnce(keyCPU, fmt.Sprintf("[ALERT] %s CPU high", mtr.Hostname),
+			fmt.Sprintf("CPU used %.1f%% (threshold %.1f%%)", mtr.CPU.UsedPercent, p.Cfg.CPUThreshold))
+	} else {
+		p.recoverIfActive(keyCPU, fmt.Sprintf("[RECOVERED] %s CPU", mtr.Hostname),
+			fmt.Sprintf("CPU back to %.1f%%", mtr.CPU.UsedPercent))
 	}
 	// Memory threshold
 	keyMem := fmt.Sprintf("%s|mem", agentURL)

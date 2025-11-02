@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Server Monitor</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=2" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script type="module" src="/static/app.js"></script>
+  <script type="module" src="/static/app.js?v=2"></script>
   <style>
     .warn { color: #b45309; }
     .alert { color: #b91c1c; font-weight: 600; }
@@ -25,7 +25,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div>
         <h1 style="margin: 0;">Web Monitor Server</h1>
-        <div class="small">Thresholds: Mem ≥ {{printf "%.0f" .MemTh}}% • Disk ≥ {{printf "%.0f" .DiskTh}}%</div>
+        <div class="small">Thresholds: CPU ≥ {{printf "%.0f" .CPUTh}}% • Mem ≥ {{printf "%.0f" .MemTh}}% • Disk ≥ {{printf "%.0f" .DiskTh}}%</div>
       </div>
       <div id="connection-status" style="display: flex; align-items: center; gap: 8px;">
         <div id="status-dot" class="status-dot connecting"></div>
@@ -41,7 +41,7 @@
     <div id="cards"></div>
   </main>
 
-  <div id="th" data-mem="{{ .MemTh }}" data-disk="{{ .DiskTh }}" data-proc="{{ .ProcTh }}" style="display:none"></div>
+  <div id="th" data-cpu="{{ .CPUTh }}" data-mem="{{ .MemTh }}" data-disk="{{ .DiskTh }}" data-proc="{{ .ProcTh }}" style="display:none"></div>
   <div id="dbth" data-conn="{{ .DBConnTh }}" data-longsec="{{ .DBLongSec }}" style="display:none"></div>
   <script>
     // Frontend JS will fetch /api/state and render cards.

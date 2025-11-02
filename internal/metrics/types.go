@@ -2,6 +2,13 @@ package metrics
 
 import "time"
 
+// CPU holds processor usage details
+type CPU struct {
+	Cores       int     `json:"cores"`
+	UsedPercent float64 `json:"usedPercent"`
+	ModelName   string  `json:"modelName"`
+}
+
 // Memory holds RAM usage details
 type Memory struct {
 	Total       uint64  `json:"total"`
@@ -35,6 +42,7 @@ type ProcMem struct {
 type ServerMetrics struct {
 	Hostname       string          `json:"hostname"`
 	UptimeSeconds  uint64          `json:"uptimeSeconds"`
+	CPU            CPU             `json:"cpu"`
 	Memory         Memory          `json:"memory"`
 	Disks          []DiskPartition `json:"disks"`
 	TopProcsByMem  []ProcMem       `json:"topProcsByMem"`

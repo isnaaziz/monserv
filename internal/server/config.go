@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Agents        []string
 	PollInterval  time.Duration
+	CPUThreshold  float64
 	MemThreshold  float64
 	DiskThreshold float64
 	ProcThreshold float64
@@ -29,6 +30,12 @@ func LoadConfig() Config {
 	if v := os.Getenv("POLL_INTERVAL_SECONDS"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			poll = time.Duration(n) * time.Second
+		}
+	}
+	cpuTh := 80.0
+	if v := os.Getenv("CPU_THRESHOLD_PERCENT"); v != "" {
+		if n, err := strconv.ParseFloat(v, 64); err == nil {
+			cpuTh = n
 		}
 	}
 	memTh := 90.0
@@ -60,7 +67,7 @@ func LoadConfig() Config {
 		logTh = isTrue(v)
 	}
 
-	return Config{Agents: agents, PollInterval: poll, MemThreshold: memTh, DiskThreshold: diskTh, ProcThreshold: procTh, LogThresholds: logTh}
+	return Config{Agents: agents, PollInterval: poll, CPUThreshold: cpuTh, MemThreshold: memTh, DiskThreshold: diskTh, ProcThreshold: procTh, LogThresholds: logTh}
 }
 
 func isTrue(s string) bool {

@@ -94,6 +94,7 @@ func main() {
 			"Agents":  agents,
 			"Latest":  latest,
 			"Updated": time.Now(),
+			"CPUTh":   cfg.CPUThreshold,
 			"MemTh":   cfg.MemThreshold,
 			"DiskTh":  cfg.DiskThreshold,
 			"ProcTh":  cfg.ProcThreshold,
@@ -104,6 +105,35 @@ func main() {
 
 	// API for JSON polling (legacy, untuk web UI lama)
 	r.GET("/api/state", func(c *gin.Context) { _, latest := p.Snapshot(); c.JSON(http.StatusOK, latest) })
+
+	// Test WebSocket page
+	r.GET("/test-websocket", func(c *gin.Context) {
+		c.File("web/static/test-websocket.html")
+	})
+
+	// Test alert endpoint (for debugging)
+	r.POST("/api/test-alert", func(c *gin.Context) {
+		var req struct {
+			AlertType string `json:"alert_type" binding:"required"` // "alert" or "recovery"
+			Subject   string `json:"subject" binding:"required"`
+			Message   string `json:"message" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Broadcast test alert via WebSocket
+		hub.BroadcastAlert(req.AlertType, req.Subject, req.Message)
+		log.Printf("[TEST-ALERT] Broadcasted: type=%s subject=%s message=%s", req.AlertType, req.Subject, req.Message)
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "sent",
+			"type":    req.AlertType,
+			"subject": req.Subject,
+			"message": req.Message,
+		})
+	})
 
 	// Serve static
 	r.Static("/static", "web/static")

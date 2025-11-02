@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -32,6 +33,24 @@ func (c *Collector) Collect(ctx context.Context) (*m.ServerMetrics, error) {
 	}
 
 	hv, _ := host.InfoWithContext(ctx)
+
+	// CPU usage
+	cpuPercents, _ := cpu.PercentWithContext(ctx, 1*time.Second, false)
+	cpuInfo, _ := cpu.InfoWithContext(ctx)
+	cpuUsage := 0.0
+	if len(cpuPercents) > 0 {
+		cpuUsage = cpuPercents[0]
+	}
+	cpuCores, _ := cpu.CountsWithContext(ctx, true)
+	cpuModel := "unknown"
+	if len(cpuInfo) > 0 {
+		cpuModel = cpuInfo[0].ModelName
+	}
+	cpuMetrics := m.CPU{
+		Cores:       cpuCores,
+		UsedPercent: cpuUsage,
+		ModelName:   cpuModel,
+	}
 
 	vm, _ := mem.VirtualMemoryWithContext(ctx)
 	memory := m.Memory{}
@@ -94,6 +113,7 @@ func (c *Collector) Collect(ctx context.Context) (*m.ServerMetrics, error) {
 	return &m.ServerMetrics{
 		Hostname:       firstNonEmpty(hv.Hostname, "unknown"),
 		UptimeSeconds:  uptime(hv),
+		CPU:            cpuMetrics,
 		Memory:         memory,
 		Disks:          parts,
 		TopProcsByMem:  procsByMem,

@@ -57,6 +57,47 @@ func CollectViaSSH(target string) (*m.ServerMetrics, error) {
 		return string(out), err
 	}
 
+	// CPU usage via top command (1 iteration, 1 second delay)
+	cpuOut, _ := run("top -bn2 -d 0.5 | grep '^%Cpu' | tail -n 1")
+	cpuUsage := 0.0
+	cpuCores := 1
+	cpuModel := "unknown"
+	
+	// Parse CPU usage from top output: %Cpu(s):  5.2 us,  2.1 sy,  0.0 ni, 92.4 id, ...
+	if cpuOut != "" {
+		fields := strings.Fields(cpuOut)
+		if len(fields) >= 8 {
+			// id (idle) is usually at index 7
+			idleStr := strings.TrimSuffix(fields[7], ",")
+			if idle, err := strconv.ParseFloat(idleStr, 64); err == nil {
+				cpuUsage = 100.0 - idle
+			}
+		}
+	}
+	
+	// Get CPU cores count
+	coresOut, _ := run("nproc")
+	if coresOut != "" {
+		if cores, err := strconv.Atoi(strings.TrimSpace(coresOut)); err == nil {
+			cpuCores = cores
+		}
+	}
+	
+	// Get CPU model
+	modelOut, _ := run("cat /proc/cpuinfo | grep 'model name' | head -n 1")
+	if modelOut != "" {
+		parts := strings.SplitN(modelOut, ":", 2)
+		if len(parts) == 2 {
+			cpuModel = strings.TrimSpace(parts[1])
+		}
+	}
+	
+	cpu := m.CPU{
+		Cores:       cpuCores,
+		UsedPercent: cpuUsage,
+		ModelName:   cpuModel,
+	}
+
 	// Memory via /proc/meminfo
 	memInfo, _ := run("cat /proc/meminfo | egrep 'MemTotal|MemAvailable|MemFree' ")
 	var total, available uint64
@@ -136,6 +177,7 @@ func CollectViaSSH(target string) (*m.ServerMetrics, error) {
 	return &m.ServerMetrics{
 		Hostname:       hostname,
 		UptimeSeconds:  0,
+		CPU:            cpu,
 		Memory:         memory,
 		Disks:          disks,
 		TopProcsByMem:  procs,
